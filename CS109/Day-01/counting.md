@@ -170,21 +170,3 @@ Step-by-step:
 👉 **Total unique orderings = 24**
 
 ---
-
-## 🤔 Further Thought
-
-What if some items are **repeated**?
-
-Examples:
-
-- `"BOBA"`
-- `"MISSISSIPPI"`
-
-In these cases, simple permutations will **overcount identical arrangements**.
-
-To fix this, we divide by the factorial of repeated elements:
-
-
-**n! / (k₁! · k₂! · … )**
-
----
