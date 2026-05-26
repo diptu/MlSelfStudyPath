@@ -1,31 +1,38 @@
-# ! pip3 install scikit-learn
+"""
+Multiple Linear Regression using the Normal Equation
+---------------------------------------------------
+
+This implementation trains a Linear Regression model
+using the closed-form Normal Equation instead of
+Batch Gradient Descent.
+
+Formula
+-------
+θ = (XᵀX)⁻¹Xᵀy
+
+Author: Nazmul Alam Diptu
+"""
+
 from __future__ import annotations
+
 import numpy as np
 import pandas as pd
-
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
 
-class LinearRegression:
+class LinearRegressionNormalEquation:
     """
-    Linear Regression using Batch Gradient Descent.
+    Multiple Linear Regression using the Normal Equation.
     """
 
-    def __init__(
-        self,
-        learning_rate: float = 0.01,
-        epochs: int = 1000,
-    ) -> None:
-        self.learning_rate = learning_rate
-        self.epochs = epochs
+    def __init__(self) -> None:
+        """
+        Initialize model parameters.
+        """
 
-        # Parameters
         self.weight: np.ndarray | None = None
         self.bias: float = 0.0
-
-        # Store training loss
-        self.loss_history: list[float] = []
 
     def fit(
         self,
@@ -33,42 +40,29 @@ class LinearRegression:
         y: np.ndarray,
     ) -> None:
         """
-        Train model using Batch Gradient Descent.
+        Train model using the Normal Equation.
+
+        Parameters
+        ----------
+        x : np.ndarray
+            Feature matrix of shape (n_samples, n_features)
+
+        y : np.ndarray
+            Target vector of shape (n_samples,)
         """
 
-        # Number of samples and features
-        n_samples, n_features = x.shape
+        # Add bias column (intercept term)
+        x_bias = np.c_[
+            np.ones(x.shape[0]),
+            x,
+        ]
 
-        # Initialize parameters
-        self.weight = np.zeros(n_features)
-        self.bias = 0.0
+        # Compute parameters using Normal Equation
+        theta = np.linalg.pinv(x_bias.T @ x_bias) @ (x_bias.T @ y)
 
-        # Gradient Descent Loop
-        for epoch in range(self.epochs):
-            # Forward Pass
-            predictions = self.predict(x)
-
-            # Compute Loss
-            loss = np.mean((predictions - y) ** 2)
-
-            self.loss_history.append(loss)
-
-            # Compute Gradients
-            dw = (2 / n_samples) * np.dot(
-                x.T,
-                (predictions - y),
-            )
-
-            db = (2 / n_samples) * np.sum(predictions - y)
-
-            # Update Parameters
-            self.weight -= self.learning_rate * dw
-
-            self.bias -= self.learning_rate * db
-
-            # Print Training Progress
-            if epoch % 100 == 0:
-                print(f"Epoch {epoch:4d} | Loss: {loss:.6f}")
+        # Separate bias and weights
+        self.bias = float(theta[0])
+        self.weight = theta[1:]
 
     def predict(
         self,
@@ -76,18 +70,22 @@ class LinearRegression:
     ) -> np.ndarray:
         """
         Predict target values.
+
+        Parameters
+        ----------
+        x : np.ndarray
+            Feature matrix
+
+        Returns
+        -------
+        np.ndarray
+            Predicted values
         """
 
         if self.weight is None:
             raise ValueError("Model not trained yet.")
 
-        return (
-            np.dot(
-                x,
-                self.weight,
-            )
-            + self.bias
-        )
+        return (x @ self.weight) + self.bias
 
     def score(
         self,
@@ -96,6 +94,19 @@ class LinearRegression:
     ) -> float:
         """
         Compute R² score.
+
+        Parameters
+        ----------
+        x : np.ndarray
+            Feature matrix
+
+        y : np.ndarray
+            Actual target values
+
+        Returns
+        -------
+        float
+            R² score
         """
 
         predictions = self.predict(x)
@@ -106,6 +117,8 @@ class LinearRegression:
 
         return 1 - (ss_residual / ss_total)
 
+
+# Example Usage
 
 if __name__ == "__main__":
     # -----------------------------------
@@ -153,10 +166,7 @@ if __name__ == "__main__":
     # -----------------------------------
     # Initialize Model
     # -----------------------------------
-    model = LinearRegression(
-        learning_rate=0.01,
-        epochs=1000,
-    )
+    model = LinearRegressionNormalEquation()
 
     # -----------------------------------
     # Train Model
